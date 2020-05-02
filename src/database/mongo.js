@@ -1,14 +1,17 @@
 // ./src/database/mongo.js
-const {MongoMemoryServer} = require('mongodb-memory-server');
+require('dotenv').config();
 const {MongoClient} = require('mongodb');
 
 let database = null;
 
 async function startDatabase() {
-  const mongo = new MongoMemoryServer();
-  const mongoDBURL = await mongo.getConnectionString();
-  const connection = await MongoClient.connect(mongoDBURL, {useNewUrlParser: true});
-  database = connection.db();
+  const mongoDBURL = process.env.DB_CONN;
+  await MongoClient.connect(mongoDBURL, {useNewUrlParser: true})
+    .then(client => {
+      console.log('Connected to Database');
+      database = client.db('match-organiser-dev');
+    })
+    .catch(error => console.log(error));
 }
 
 async function getDatabase() {

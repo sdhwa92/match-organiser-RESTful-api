@@ -1,15 +1,13 @@
 // ./src/index.js
 
 // importing the dependencies
-require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const {startDatabase} = require('./database/mongo');
-const {insertAd, getAds} = require('./database/ads');
-const {deleteAd, updateAd} = require('./database/ads');
+const {insertGame, getGames, deleteGame, updateGame} = require('./database/games');
 const jwt = require('express-jwt');
 const jwksRsa = require('jwks-rsa');
 
@@ -17,7 +15,7 @@ const jwksRsa = require('jwks-rsa');
 const app = express();
 
 // defining an array to work as the database (temporary solution)
-const ads = [
+const games = [
   {title: 'Hello, world (again)!'}
 ];
 
@@ -33,9 +31,9 @@ app.use(cors());
 // adding morgan to log HTTP requests
 app.use(morgan('combined'));
 
-// defining an endpoint to return all ads
+// defining an endpoint to return all games
 app.get('/', async (req, res) => {
-  res.send(await getAds());
+  res.send(await getGames());
 });
 
 const checkJwt = jwt({
@@ -55,32 +53,30 @@ const checkJwt = jwt({
 app.use(checkJwt);
 
 app.post('/', async (req, res) => {
-  const newAd = req.body;
-  await insertAd(newAd);
-  res.send({ message: 'New ad inserted.' });
+  const newGame = req.body;
+  await insertGame(newGame);
+  res.send({ message: 'New game inserted.' });
 });
 
 /**
  * Using Express route parameters to be able to fetch, from the URL requested.
- * The id of the ad you want to delete or update (/:id).
+ * The id of the game you want to delete or update (/:id).
  */
-// endpoint to delete an ad
+// endpoint to delete an game
 app.delete('/:id', async (req, res) => {
-  await deleteAd(req.params.id);
-  res.send({ message: 'Ad removed.' });
+  await deleteGame(req.params.id);
+  res.send({ message: 'Game removed.' });
 });
 
-// endpoint to update an ad
+// endpoint to update an game
 app.put('/:id', async (req, res) => {
-  const updatedAd = req.body;
-  await updateAd(req.params.id, updatedAd);
-  res.send({ message: 'Ad updated.' });
+  const updatedGame = req.body;
+  await updateGame(req.params.id, updatedGame);
+  res.send({ message: 'Game updated.' });
 });
 
 // start the in-memory MongoDB instance
 startDatabase().then(async () => {
-  await insertAd({title: 'Hello, now from the in-memory database!'});
-
   // start the server
   app.listen(3001, async () => {
     console.log('listening on port 3001');
